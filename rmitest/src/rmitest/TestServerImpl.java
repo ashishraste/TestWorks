@@ -40,9 +40,9 @@ public class TestServerImpl extends UnicastRemoteObject implements TestServer {
 	
 	public static void main(String[] args) {    		
 		FileInputStream propsFile;
-    String hostname = argv[0];
+		String hostname = argv[0];
 		try {
-      //  write the JVM properties in a file (system.properties) and set it here
+        		//  write the JVM properties in a file (system.properties) and set it here
 			//  propsFile = new FileInputStream("system.properties"); 
 			//  Properties props = new Properties(System.getProperties());
 			//  props.load(propsFile);
@@ -50,17 +50,17 @@ public class TestServerImpl extends UnicastRemoteObject implements TestServer {
 			//  System.setProperties(props);
 			//	display new properties set on the command line
 			//  System.getProperties().list(System.out);
-			
+	
 			TestServerImpl obj = new TestServerImpl();			
 			System.out.println("RMI server: " + obj);
 			// creating a registry on the local host, binding the stub to it       	
-      LocateRegistry.createRegistry(1099);
-      Naming.rebind("//"+hostname+"/TestServer", obj);
-	  }
+      			LocateRegistry.createRegistry(1099);
+      			Naming.rebind("//"+hostname+"/TestServer", obj);
+		}
 		catch (Exception e) {
 			System.out.println("TestServer exception: " + e.getMessage());
-	        e.printStackTrace();
-		}
+	        	e.printStackTrace();
+		}	
 	}
 
 }
