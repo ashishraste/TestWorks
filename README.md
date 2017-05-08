@@ -1,7 +1,7 @@
 ### snippets
 ---
 
-This repository contains some quick programs for experimentation with programming paradigms and techniques.
+This repository contains some quick programs for experimenting with programming paradigms and techniques.
 
 #### Folder layout
 1. rmitest : Contains a Java-based RMI server/client code.
