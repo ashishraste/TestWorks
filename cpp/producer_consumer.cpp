@@ -2,15 +2,18 @@
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 #include <boost/shared_ptr.hpp>
-#include <stdlib.h>
-
+// #include <stdlib.h>
 
 /*
 * Steps :
-* 1. Create a shared pointer for the integers-resource.
-* 2. Create two threads, one each for a producer and a consumer,
-*    implement locking mechanisms for accessing the shared resource.*    
+* 1. Create a shared pointer for a common resource : a vector, to which shared-pointers from 
+*    producer and consumer exists.
+* 2. Create two threads, one each for a producer and a consumer, implement unique and shared locking
+*    mechanisms for writing and reading to/from the vector.  
 */
+
+boost::shared_mutex mutex;  // to be applicable with shared_lock(s)
+
 
 template<typename T>
 class Producer
@@ -24,8 +27,20 @@ public:
   {}
   void run() 
   {
-    for (int i=0; i < 100; ++i) {
-      produce();
+    for (int i=0; i < 15; ++i) {
+      // need to write into the buffer, hence an exclusive unique_lock
+      boost::unique_lock<boost::shared_mutex> lock{mutex};
+      if (pres->size() >= pres->capacity()) { 
+        std::cout << "clearing the buffer\n";
+        pres->clear();
+      }
+      else {
+        int n = rand() % 100;
+        std::cout << "number pushed " << n << "\n";
+        pres->push_back(n);
+      }
+      lock.unlock();
+      wait(1);  // wait for a second to be sure of the write-operation
     }
   }
 
@@ -35,21 +50,8 @@ private:
   {
     boost::this_thread::sleep_for(boost::chrono::seconds{seconds});
   }
-  void produce() 
-  {
-    if (pres->size() >= pres->capacity()) { 
-      std::cout << "capacity overflow.. clearing the buffer\n";
-      pres->clear();
-
-    }
-    else {
-      int n = rand() % 100;
-      std::cout << "number pushed " << n << "\n";
-      pres->push_back(n);
-    }
-    wait(2);
-  }
 };
+
 
 template<typename T>
 class Consumer
@@ -61,19 +63,20 @@ public:
   explicit Consumer():
     pres(boost::shared_ptr<std::vector<T>>(new std::vector<T>(10)))
   {}
-private:
-  boost::shared_ptr<std::vector<T>> pres;
   void run()
   {
-    while (1) {
-      consume();
+    for (int i=0; i<20; ++i) {
+      wait(1);  
+      // only reads from the resource, hence a shared_lock
+      boost::shared_lock<boost::shared_mutex> lock{mutex};
+      std::cout << "last element " << pres->back() << "\n";
     }
   }
-  void consume()
+private:
+  boost::shared_ptr<std::vector<T>> pres;
+  void wait(int seconds)
   {
-    if (!pres->size()) {
-      std::cout << pres->pop_back() << "\n";
-    }
+    boost::this_thread::sleep_for(boost::chrono::seconds{seconds});
   }
 };
 
@@ -81,9 +84,11 @@ private:
 int main() 
 {
   boost::shared_ptr<std::vector<int>> buf(new std::vector<int>(20));
-  Producer<int> p(buf);
-  boost::thread* pt = new boost::thread(boost::bind(&Producer<int>::run, &p));
-  // boost::thread* ct = new boost::thread(boost::bind(&Consumer::run, &c));
+  Producer<int> pi(buf);
+  Consumer<int> ci(buf);
+  boost::thread* pt = new boost::thread(boost::bind(&Producer<int>::run, &pi));
+  boost::thread* ct = new boost::thread(boost::bind(&Consumer<int>::run, &ci));
   pt->join();
+  ct->join();
   return 0;
 }
