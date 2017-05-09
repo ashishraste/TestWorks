@@ -12,16 +12,16 @@
 *    implement locking mechanisms for accessing the shared resource.*    
 */
 
+template<typename T>
 class Producer
 {
 public:
-  explicit Producer(boost::shared_ptr<std::vector<int>> buf):
-    res(boost::shared_ptr<std::vector<int>>(buf))
+  explicit Producer(boost::shared_ptr<std::vector<T>> buf):
+    pres(boost::shared_ptr<std::vector<T>>(buf))
   {}
   explicit Producer():
-    res(boost::shared_ptr<std::vector<int>>(new std::vector<int>(10)))
+    pres(boost::shared_ptr<std::vector<T>>(new std::vector<T>(10)))
   {}
-
   void run() 
   {
     for (int i=0; i < 100; ++i) {
@@ -30,38 +30,59 @@ public:
   }
 
 private:
-  boost::shared_ptr<std::vector<int>> res;  // resource queue
+  boost::shared_ptr<std::vector<T>> pres;  // resource queue
   void wait(int seconds)
   {
     boost::this_thread::sleep_for(boost::chrono::seconds{seconds});
   }
   void produce() 
   {
-    if (res->size() >= res->capacity()) { 
+    if (pres->size() >= pres->capacity()) { 
       std::cout << "capacity overflow.. clearing the buffer\n";
-      res->clear();
+      pres->clear();
 
     }
     else {
       int n = rand() % 100;
       std::cout << "number pushed " << n << "\n";
-      res->push_back(n);
+      pres->push_back(n);
     }
     wait(2);
   }
 };
 
+template<typename T>
 class Consumer
 {
+public:
+  explicit Consumer(boost::shared_ptr<std::vector<T>> buf):
+    pres(boost::shared_ptr<std::vector<T>>(buf))
+  {}
+  explicit Consumer():
+    pres(boost::shared_ptr<std::vector<T>>(new std::vector<T>(10)))
+  {}
 private:
-  boost::shared_ptr<std::vector<int>> cres;
+  boost::shared_ptr<std::vector<T>> pres;
+  void run()
+  {
+    while (1) {
+      consume();
+    }
+  }
+  void consume()
+  {
+    if (!pres->size()) {
+      std::cout << pres->pop_back() << "\n";
+    }
+  }
 };
+
 
 int main() 
 {
   boost::shared_ptr<std::vector<int>> buf(new std::vector<int>(20));
-  Producer p(buf);
-  boost::thread* pt = new boost::thread(boost::bind(&Producer::run, &p));
+  Producer<int> p(buf);
+  boost::thread* pt = new boost::thread(boost::bind(&Producer<int>::run, &p));
   // boost::thread* ct = new boost::thread(boost::bind(&Consumer::run, &c));
   pt->join();
   return 0;
