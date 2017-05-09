@@ -19,12 +19,12 @@ void delayGuy()
 
 void chatterGuy()
 {
-	for (int i=0; i<=2; ++i) std::cout << "I'm catbug :) \n";
+  for (int i=0; i<=2; ++i) std::cout << "I'm catbug :) \n";
 }
 
 void boringCompanyGuy()
 {
-	std::cout << "I'll help humanity \n";
+  std::cout << "I'll help humanity \n";
 }
 
 int main()

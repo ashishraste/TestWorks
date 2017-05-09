@@ -8,3 +8,6 @@ find_package(Boost REQUIRED system filesystem thread chrono)
 include_directories(${Boost_INCLUDE_DIRS})
 add_executable(boost_threading boost_threading.cpp)
 target_link_libraries(boost_threading ${Boost_LIBRARIES})
+
+add_executable(producer_consumer producer_consumer.cpp)
+target_link_libraries(producer_consumer ${Boost_LIBRARIES})
