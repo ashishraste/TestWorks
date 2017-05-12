@@ -2,7 +2,6 @@
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 #include <boost/shared_ptr.hpp>
-// #include <stdlib.h>
 
 /*
 * Steps :

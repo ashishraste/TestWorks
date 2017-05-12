@@ -1,34 +1,33 @@
 #include <iostream>
-#include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
-
+#include "snippets/blocking_queue.h"
 
 using namespace std;
 
-boost::mutex mutex;       // mutex variable
-boost::condition cond;    // condition variable
-static bool queue_ready;  // queue state
+template<typename T>
+void BlockingQueue<T>::insert(T elem) 
+{
+	while (buffer.size() == buffer.capacity()) 
+		cond.wait(mutex);
+	boost::unique_lock<boost::mutex> lock(mutex);
+	buffer.push_back(elem);
+	cond.notify_all();
+}
 
 template<typename T>
-class BlockingQueue
+T BlockingQueue<T>::remove()
 {
-public:
-	explicit BlockingQueue(const vector<T>& buf) : buffer(buf)
-	{}
-	void insert(T elem) 
-	{
-
-	}
-	void remove()
-	{
-
-	}
-private:
-	vector<T> buffer;
-};
-
+	boost::unique_lock<boost::mutex> lock{mutex};
+	while (buffer.size() == 0)
+		cond.wait(mutex);
+	T elem = buffer.front();
+	buffer.erase(buffer.begin());
+	return elem;
+}
 
 int main() 
 {
+	vector<int> integers(10);
+	BlockingQueue<int> queue(integers);
 	return 0;
 }
