@@ -9,8 +9,8 @@ include_directories(include ${Boost_INCLUDE_DIRS})
 add_executable(boost_threading boost_threading.cpp)
 target_link_libraries(boost_threading ${Boost_LIBRARIES})
 
+add_executable(single_prodcons single_producer_consumer.cpp)
+target_link_libraries(single_prodcons ${Boost_LIBRARIES})
+
 add_executable(producer_consumer producer_consumer.cpp)
 target_link_libraries(producer_consumer ${Boost_LIBRARIES})
-
-add_executable(blocking_queue blocking_queue.cpp)
-target_link_libraries(blocking_queue ${Boost_LIBRARIES})
