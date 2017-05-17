@@ -3,6 +3,9 @@
 
 #include <pthread.h>
 
+/**
+ * @brief      Class containing the mutex.
+ */
 class MutexCore
 {
 public:
@@ -11,6 +14,10 @@ public:
   pthread_mutex_t mutex;
 };
 
+
+/**
+ * @brief      Class for mutex operations.
+ */
 class Mutex
 {
 public:
