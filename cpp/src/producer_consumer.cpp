@@ -17,12 +17,12 @@ int main()
   Consumer<BlockingQueue<int>> c1(queue);
   Consumer<BlockingQueue<int>> c2(queue);
   
-  boost::thread* pt1 = new boost::thread(boost::bind(&Producer<BlockingQueue<int>>::produce,p1));
-  boost::thread* pt2 = new boost::thread(boost::bind(&Producer<BlockingQueue<int>>::produce,p2));
-  boost::thread* ct1 = new boost::thread(boost::bind(&Consumer<BlockingQueue<int>>::consume<int>,c1));
-  boost::thread* ct2 = new boost::thread(boost::bind(&Consumer<BlockingQueue<int>>::consume<int>,c2));
-  pt1->join();
-  pt2->join();
-  ct1->join();  
-  ct2->join();
+  boost::thread pt1(boost::bind(&Producer<BlockingQueue<int>>::produce,p1));
+  boost::thread pt2(boost::bind(&Producer<BlockingQueue<int>>::produce,p2));
+  boost::thread ct1(boost::bind(&Consumer<BlockingQueue<int>>::consume<int>,c1));
+  boost::thread ct2(boost::bind(&Consumer<BlockingQueue<int>>::consume<int>,c2));
+  pt1.join();
+  pt2.join();
+  ct1.join();  
+  ct2.join();
 }
