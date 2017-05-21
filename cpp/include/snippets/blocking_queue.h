@@ -4,6 +4,11 @@
 #include <vector>
 #include <cassert>
 
+/**
+ * @brief      Blocking Queue implementation.
+ *
+ * @tparam     T  type of the elements stored in the queue.
+ */
 template<typename T>
 class BlockingQueue
 {
@@ -13,8 +18,9 @@ public:
   {}
   explicit BlockingQueue(): buffer()
   {}
-  void insert(const T& elem);
-  T remove();
+  void push(const T& elem);
+  void push(T&& elem);
+  T pop();
   int size() const { return buffer.size(); }
   ~BlockingQueue()
   {}
@@ -22,26 +28,31 @@ public:
 private:
   boost::mutex mutex;                             // mutex variable
   boost::condition_variable_any notEmptyCond;     // condition variable, to check whether the queue is empty
-  std::vector<T> buffer;
+  std::vector<T> buffer;                          // uses a vector to store the elements, doesn't have capacity constraints
 };
 
 template<typename T>
-void BlockingQueue<T>::insert(const T& elem) 
+void BlockingQueue<T>::push(const T& elem) 
 {
   boost::mutex::scoped_lock lock(mutex);
   buffer.push_back(elem);
-  notEmptyCond.notify_one();                      // notifies one of the waiting threads which are blocked on the queue  
-  assert(!buffer.empty());
+  lock.unlock();
+  notEmptyCond.notify_one();                      // notifies one of the waiting threads which are blocked on the queue
+  // assert(!buffer.empty());
+}
+
+// Push with move-semantics.
+template<typename T>
+void BlockingQueue<T>::push(T&& elem)
+{
+  push(std::move(elem));
 }
 
 template<typename T>
-T BlockingQueue<T>::remove()
+T BlockingQueue<T>::pop()
 {
   boost::mutex::scoped_lock lock(mutex);
-  while (buffer.empty()) {
-    std::cout << "waiting to consume at least one element \n";
-    notEmptyCond.wait(lock,[&](){ return (buffer.size() > 0); });   // waits for the queue to get filled and for a notification to consume
-  }
+  notEmptyCond.wait(lock,[&](){ return (buffer.size() > 0); });   // waits for the queue to get filled until its 'size' condition is satisfied
   T elem = buffer.front();
   buffer.erase(buffer.begin());
   return elem;
