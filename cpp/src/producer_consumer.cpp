@@ -17,6 +17,7 @@ int main()
   Consumer<BlockingQueue<int>> c1(queue);
   Consumer<BlockingQueue<int>> c2(queue);
   
+  srand(time(NULL));
   boost::thread pt1(boost::bind(&Producer<BlockingQueue<int>>::produce,p1));
   boost::thread pt2(boost::bind(&Producer<BlockingQueue<int>>::produce,p2));
   boost::thread ct1(boost::bind(&Consumer<BlockingQueue<int>>::consume<int>,c1));
