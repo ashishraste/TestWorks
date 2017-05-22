@@ -19,9 +19,7 @@ public:
   explicit BlockingQueue(): buffer()
   {}
   void push(const T& elem);
-  void push(T&& elem);
   T pop();
-  int size() const { return buffer.size(); }
   ~BlockingQueue()
   {}
 
@@ -39,13 +37,6 @@ void BlockingQueue<T>::push(const T& elem)
   lock.unlock();
   notEmptyCond.notify_one();                      // notifies one of the waiting threads which are blocked on the queue
   // assert(!buffer.empty());
-}
-
-// Push with move-semantics.
-template<typename T>
-void BlockingQueue<T>::push(T&& elem)
-{
-  push(std::move(elem));
 }
 
 template<typename T>
