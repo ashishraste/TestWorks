@@ -4,6 +4,8 @@
 #include <boost/thread.hpp>
 #include <boost/chrono.hpp>
 
+static boost::mutex smutex;
+
 /**
  * @brief      Class for producer.
  */
@@ -30,7 +32,8 @@ public:
   {
     for (int i=0; i<numElements; ++i) {
       int element = std::rand() % 100;
-      pbuf->insert(element);
+      pbuf->push(element);
+      boost::lock_guard<boost::mutex> lock(smutex);
       std::cout << "produced " << element << "\n";
       wait();
     }
@@ -54,17 +57,17 @@ template<typename T>
 class Consumer
 {
 public:
-  explicit Consumer(boost::shared_ptr<T> buf, int interval=2, int nElements=10):
+  explicit Consumer(boost::shared_ptr<T> buf, int interval=1, int nElements=10):
     cbuf(boost::shared_ptr<T>(buf)),
     period(interval),
     numElements(nElements)
   {}
-  explicit Consumer(T* buf, int interval=2, int nElements=10):
+  explicit Consumer(T* buf, int interval=1, int nElements=10):
     cbuf(boost::shared_ptr<T>(buf)),
     period(interval),
     numElements(nElements)
   {}
-  explicit Consumer(): cbuf(),period(2),numElements(10)
+  explicit Consumer(): cbuf(),period(1),numElements(10)
   {}
   /**
    * @brief      Consumes elements from a buffer and prints them.
@@ -73,7 +76,8 @@ public:
   volatile void consume()
   {
     for (int i=0; i<10; ++i) {
-      Y element = cbuf->remove();
+      Y element = cbuf->pop();
+      boost::lock_guard<boost::mutex> lock(smutex);
       std::cout << "consumed " << element << "\n";
       wait();
     }
