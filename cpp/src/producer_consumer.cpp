@@ -11,7 +11,7 @@ using namespace std;
 int main()
 {
   vector<int> integers;
-  boost::shared_ptr<BlockingQueue<int>> queue(new BlockingQueue<int>(integers));
+  boost::shared_ptr<BlockingQueue<int>> queue(new BlockingQueue<int>(integers,10));
   Producer<BlockingQueue<int>> p1(queue);
   Producer<BlockingQueue<int>> p2(queue);
   Consumer<BlockingQueue<int>> c1(queue);
